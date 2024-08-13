@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/styles/css/artis.css">
+        
+        <title>Artist Info</title>
+    </head>
+    <body>
+        <div class="container">
+            <main class="parent">
+                <aside class="sidebar">
+                    <img class="card-img" src="{{.Image}}" alt="Artist Image">
+                    <h4>Name: {{.Name}}</h4>
+                </aside>
+                <div class="main-content">
+                    <div class="nav">
+                        <div class="navigation">
+                            <ul>
+                                <li><a href="#"
+                                        id="showInfoAbout">About</a></li>
+                                <li><a href="#"
+                                        id="showInfoRelation">Relation</a></li>
+                                <li><a href="#"
+                                        id="showInfolocation">Location</a></li>
+                                <li><a href="#"
+                                        id="showInfodates">Dates</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="content">
+                        <div class="all-content">
+                            <div class="info contents" id="about">
+                                <h4 class="About">About Me</h4>
+                                <span class="prog"></span>
+                                <div class="Members">
+                                    <p>Members: {{range .Members}}{{.}},
+                                        {{end}}</p>
+                                </div>
+                            </div>
+
+                            <div id="relation" class="contents">
+                                <div class="relation">
+                                    <div>
+                                        <h3 class="title">Dates Locations</h3>
+                                        <span class="prog"></span>
+                                    </div>
+                                    <div class="datesLocations">
+
+                                        <ul>
+                                            {{range $location, $dates :=
+                                            .DatesLocations}}
+                                            <div class="timeline-item">
+                                                <li>
+                                                    <strong
+                                                        class="institution">{{$location}}:</strong>
+                                                    <ul>
+                                                        {{range $dates}}
+                                                        <li
+                                                            class="year">{{.}}</li>
+                                                        {{end}}
+                                                    </ul>
+                                                </li>
+                                            </div>
+                                            {{end}}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="location" class="contents">
+                                <div>
+                                    <h3 class="title">Locations Maps</h3>
+                                    <span class="prog"></span>
+                                </div>
+                            </div>
+                           
+                        </div>
+                    </div>
+                </main>
+            </div>
+            <script src="/styles/js/navigation.js"></script>
+            <script src="/styles/maps.js"></script>
+        </body>
+    </html>
