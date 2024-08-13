@@ -19,7 +19,7 @@ func GetDataFromJson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	artisData := changeJsonToStruct()
-	mpt, err := template.ParseFiles("templats/index.html")
+	mpt, err := template.ParseFiles("templates/index.html")
 	if err != nil {
 		http.Error(w, "Error 500 Internal Server Error", http.StatusInternalServerError)
 		return
@@ -38,7 +38,7 @@ func ShowArtistHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Artist not found: %v", err), http.StatusNotFound)
 		return
 	}
-	tmpl := template.Must(template.ParseFiles("templats/InforArtis.html"))
+	tmpl := template.Must(template.ParseFiles("templates/InforArtis.html"))
 	err = tmpl.Execute(w, artist)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error executing template: %v", err), http.StatusInternalServerError)
@@ -49,7 +49,7 @@ func HandleSearsh(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("search")
 	artisData := changeJsonToStruct()
 	result := Searsh_data(query, artisData)
-	tmpl := template.Must(template.ParseFiles("templats/index.html"))
+	tmpl := template.Must(template.ParseFiles("templates/index.html"))
 	err := tmpl.Execute(w, result)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error executing template: %v", err), http.StatusInternalServerError)
