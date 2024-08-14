@@ -4,34 +4,32 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
+	
 )
 
-func changeJsonToStruct() ([]JsonData, error) {
+func changeJsonToStruct() []JsonData {
 	var artistData []JsonData
-
-	response, err := http.Get("https://groupietrackers.herokuapp.com/api/artists")
+	url := "https://groupietrackers.herokuapp.com/api/artists"
+	response, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("error making request: %w", err)
-	}
-	defer response.Body.Close()
-
-	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", response.StatusCode)
+		log.Fatal("Error from Response")
 	}
 
-	boderesponse, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error reading response body: %w", err)
-	}
+	if response.StatusCode == http.StatusOK {
+		boderesponse, err := io.ReadAll(response.Body)
+		if err != nil {
+			log.Fatal("Error from reading Response")
+		}
+		err = json.Unmarshal(boderesponse, &artistData)
+		if err != nil {
+			log.Fatal("Error To Unmarshal Data ")
+		}
 
-	err = json.Unmarshal(boderesponse, &artistData)
-	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling data: %w", err)
 	}
-
-	return artistData, nil
+	return artistData
 }
 
 func Fetch_Data_Relation_FromId(id string) (Artist, error) {
@@ -39,16 +37,14 @@ func Fetch_Data_Relation_FromId(id string) (Artist, error) {
 	if err != nil {
 		return Artist{}, fmt.Errorf("error fetching data from artis data %v", err)
 	}
-
-	ResponBody, err := http.Get(artistsJson.Relations)
+	url := "https://groupietrackers.herokuapp.com/api/relation/" + id
+	ResponBody, err := http.Get(url)
 	if err != nil {
 		return Artist{}, fmt.Errorf("error fetching data from URL: %v", err)
 	}
-
 	defer ResponBody.Body.Close()
 	var artist Artist
 	body, err := io.ReadAll(ResponBody.Body)
-	fmt.Println(string(body))
 	if err != nil {
 		return Artist{}, fmt.Errorf("error reading response body: %v", err)
 	}
@@ -63,7 +59,6 @@ func Fetch_Data_Relation_FromId(id string) (Artist, error) {
 		Name:           artistsJson.Name,
 		DatesLocations: artist.DatesLocations,
 		Members:        artistsJson.Members,
-		// CreationDate:   artistsJson.ConcertDates,
 	}
 	formatlocations := make(map[string][]string)
 
@@ -76,7 +71,8 @@ func Fetch_Data_Relation_FromId(id string) (Artist, error) {
 }
 
 func Get_Data_From_Artists_With_ID(id string) (JsonData, error) {
-	respoceArtists, err := http.Get("https://groupietrackers.herokuapp.com/api/artists/" + id)
+	urlartists := "https://groupietrackers.herokuapp.com/api/artists/" + id
+	respoceArtists, err := http.Get(urlartists)
 	if err != nil {
 		return JsonData{}, fmt.Errorf("error fetching data from URL: %v", err)
 	}
@@ -91,12 +87,18 @@ func Get_Data_From_Artists_With_ID(id string) (JsonData, error) {
 	if err != nil {
 		return JsonData{}, fmt.Errorf("error decoding artist data: %v", err)
 	}
-	newartist := JsonData{
-		Name:    artistsJson.Name,
-		Image:   artistsJson.Image,
-		Members: artistsJson.Members,
+	return artistsJson, nil
+}
+
+func Searsh_data(search string, artists []JsonData) []JsonData {
+	var result []JsonData
+	for _, item := range artists {
+		if strings.Contains(strings.ToLower(item.Name), strings.ToLower(search)) ||
+			strings.Contains(strings.ToLower(item.FirstAlbum), strings.ToLower(search)) {
+			result = append(result, item)
+		}
 	}
-	return newartist, nil
+	return result
 }
 
 func CaptalizdString(s string) string {
@@ -104,14 +106,3 @@ func CaptalizdString(s string) string {
 	s = strings.Replace(s, "_", " ", -1)
 	return strings.Title(s)
 }
-
-// func ErrorsMessage() AllMessageErrors {
-// 	return AllMessageErrors{
-// 		NotFound:                 "Page Not Found",
-// 		BadRequest:               "Bad Request",
-// 		InternalError:            "Internal Server Error",
-// 		DescriptionNotFound:      "Sorry, the page you are looking for does not exist. It might have been moved or deleted. Please check the URL or return to the homepage.",
-// 		DescriptionBadRequest:    "The request could not be understood by the server due to malformed syntax. Please verify your input and try again.",
-// 		DescriptionInternalError: "An unexpected error occurred on the server. We are working to resolve this issue. Please try again later.",
-// 	}
-// }
