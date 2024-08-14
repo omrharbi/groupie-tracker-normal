@@ -10,9 +10,8 @@ import (
 
 func main() {
 	http.HandleFunc("/", Groupie_tracker.GetDataFromJson)
-	http.HandleFunc("/Artist/{id}", Groupie_tracker.ShowArtistHandler)
+	http.HandleFunc("/Artist/{id}", Groupie_tracker.HandlerShowRelation)
 	http.HandleFunc("/search", Groupie_tracker.HandleSearsh)
-	http.HandleFunc("/styles/", Groupie_tracker.HandleStyle)
 	fmt.Println("http://localhost:8081")
 	log.Fatal(http.ListenAndServe(":8081", nil))
 }

@@ -1,6 +1,7 @@
 package Groupie_tracker
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -9,7 +10,7 @@ import (
 )
 
 type ArtistWithLocation struct {
-	JsonData   interface{}
+	JsonData interface{}
 	// ArtistData Artist
 }
 
@@ -30,27 +31,34 @@ func GetDataFromJson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	artisData := changeJsonToStruct()
-	mpt, err := template.ParseFiles("templates/index.html")
+	err := tmpl.ExecuteTemplate(w, "index.html", artisData)
 	if err != nil {
 		HandleErrors(w, errors.InternalError, errors.DescriptionInternalError, http.StatusInternalServerError)
 		return
 	}
 }
 
-func ShowArtistHandler(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	if r.URL.Path != "/Artist/"+id {
-		http.Error(w, "404 not found", http.StatusNotFound)
+func HandlerShowRelation(w http.ResponseWriter, r *http.Request) {
+	idParam := r.PathValue("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil || id <= 0 {
+		HandleErrors(w, errors.BadRequest, errors.DescriptionBadRequest, http.StatusBadRequest)
 		return
 	}
-	artist, err := Fetch_Data_Relation_FromId(id)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Artist not found: %v", err), http.StatusNotFound)
+	if r.URL.Path != "/Artist/"+idParam {
+		HandleErrors(w, errors.NotFound, errors.DescriptionNotFound, http.StatusNotFound)
 		return
 	}
 	artist, err := Fetch_Data_Relation_FromId(idParam)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error executing template: %v", err), http.StatusInternalServerError)
+		HandleErrors(w, errors.InternalError, errors.DescriptionInternalError, http.StatusInternalServerError)
+		return
+	}
+	errs := tmpl.ExecuteTemplate(w, "InforArtis.html", artist)
+	if errs != nil {
+		HandleErrors(w, errors.InternalError, errors.DescriptionInternalError, http.StatusInternalServerError)
+
+		return
 	}
 }
 
@@ -66,14 +74,13 @@ func HandleSearsh(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleStyle(w http.ResponseWriter, r *http.Request) {
-	errors := ErrorsMessage()
 	path := r.URL.Path[len("/styles"):]
 	fullpath := filepath.Join("src", path)
 	fileinfo, err := os.Stat(fullpath)
 
 	if !os.IsNotExist(err) && !fileinfo.IsDir() {
 		http.StripPrefix("/styles", http.FileServer(http.Dir("src"))).ServeHTTP(w, r)
-	}else{
+	} else {
 		http.Error(w, fmt.Sprintf("Error executing template: %v", err), http.StatusInternalServerError)
 		return
 	}
