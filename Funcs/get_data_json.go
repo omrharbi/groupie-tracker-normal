@@ -27,7 +27,7 @@ func GetDataFromJson(w http.ResponseWriter, r *http.Request) {
 	mpt.Execute(w, artisData)
 }
 
-func ShowArtistHandler(w http.ResponseWriter, r *http.Request) {
+func Handler_Show_Relation(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if r.URL.Path != "/Artist/"+id {
 		http.Error(w, "404 not found", http.StatusNotFound)

@@ -18,3 +18,6 @@ type JsonData struct {
 	ConcertDates string   `json:"concertDates"`
 	Relations    string   `json:"relations"`
 }
+type Errors struct{
+	
+}
