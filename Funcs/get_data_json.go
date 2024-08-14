@@ -48,7 +48,7 @@ func HandlerShowRelation(w http.ResponseWriter, r *http.Request) {
 		HandleErrors(w, errors.NotFound, errors.DescriptionNotFound, http.StatusNotFound)
 		return
 	}
-	artist, err := Fetch_Data_Relation_FromId(idParam)
+	artist, err := FetchDataRelationFromId(idParam)
 	if err != nil {
 		HandleErrors(w, errors.InternalError, errors.DescriptionInternalError, http.StatusInternalServerError)
 		return
@@ -69,13 +69,12 @@ func HandleStyle(w http.ResponseWriter, r *http.Request) {
 	if !os.IsNotExist(err) && !fileinfo.IsDir() {
 		http.StripPrefix("/styles", http.FileServer(http.Dir("src"))).ServeHTTP(w, r)
 	} else {
-		HandleErrors(w, errors.InternalError, "Error 500 Internal Server Error", http.StatusInternalServerError)
+		HandleErrors(w, errors.InternalError, errors.DescriptionInternalError, http.StatusInternalServerError)
 		return
 	}
 }
 
 func HandleErrors(w http.ResponseWriter, message, description string, code int) {
-	// tmp1 := Tmp{}
 	errorsMessage := Errors{
 		Message:     message,
 		Description: description,

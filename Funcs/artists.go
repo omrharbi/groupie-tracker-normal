@@ -31,8 +31,8 @@ func changeJsonToStruct() []JsonData {
 	return artistData
 }
 
-func Fetch_Data_Relation_FromId(id string) (Artist, error) {
-	artistsJson, err := Get_Data_From_Artists_With_ID(id)
+func FetchDataRelationFromId(id string) (Artist, error) {
+	artistsJson, err := GetDataFromArtistsWithID(id)
 	if err != nil {
 		return Artist{}, fmt.Errorf("error fetching data from artis data %v", err)
 	}
@@ -69,7 +69,7 @@ func Fetch_Data_Relation_FromId(id string) (Artist, error) {
 	return artist, nil
 }
 
-func Get_Data_From_Artists_With_ID(id string) (JsonData, error) {
+func GetDataFromArtistsWithID(id string) (JsonData, error) {
 	urlartists := "https://groupietrackers.herokuapp.com/api/artists/" + id
 	respoceArtists, err := http.Get(urlartists)
 	if err != nil {
