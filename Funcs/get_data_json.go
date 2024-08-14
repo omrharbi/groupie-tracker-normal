@@ -45,16 +45,16 @@ func ShowArtistHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleSearsh(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query().Get("search")
-	artisData := changeJsonToStruct()
-	result := Searsh_data(query, artisData)
-	tmpl := template.Must(template.ParseFiles("templates/index.html"))
-	err := tmpl.Execute(w, result)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error executing template: %v", err), http.StatusInternalServerError)
-	}
-}
+// func HandleSearsh(w http.ResponseWriter, r *http.Request) {
+// 	query := r.URL.Query().Get("search")
+// 	artisData := changeJsonToStruct()
+// 	result := Searsh_data(query, artisData)
+// 	tmpl := template.Must(template.ParseFiles("templates/index.html"))
+// 	err := tmpl.Execute(w, result)
+// 	if err != nil {
+// 		http.Error(w, fmt.Sprintf("Error executing template: %v", err), http.StatusInternalServerError)
+// 	}
+// }
 
 func HandleStyle(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path[len("/styles"):]
@@ -63,7 +63,7 @@ func HandleStyle(w http.ResponseWriter, r *http.Request) {
 
 	if !os.IsNotExist(err) && !fileinfo.IsDir() {
 		http.StripPrefix("/styles", http.FileServer(http.Dir("src"))).ServeHTTP(w, r)
-	}else{
+	} else {
 		http.Error(w, fmt.Sprintf("Error executing template: %v", err), http.StatusInternalServerError)
 		return
 	}

@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	
 )
 
 func changeJsonToStruct() []JsonData {
@@ -59,6 +58,7 @@ func Fetch_Data_Relation_FromId(id string) (Artist, error) {
 		Name:           artistsJson.Name,
 		DatesLocations: artist.DatesLocations,
 		Members:        artistsJson.Members,
+		CreationDate:   artistsJson.ConcertDates,
 	}
 	formatlocations := make(map[string][]string)
 
@@ -87,22 +87,27 @@ func Get_Data_From_Artists_With_ID(id string) (JsonData, error) {
 	if err != nil {
 		return JsonData{}, fmt.Errorf("error decoding artist data: %v", err)
 	}
-	return artistsJson, nil
-}
-
-func Searsh_data(search string, artists []JsonData) []JsonData {
-	var result []JsonData
-	for _, item := range artists {
-		if strings.Contains(strings.ToLower(item.Name), strings.ToLower(search)) ||
-			strings.Contains(strings.ToLower(item.FirstAlbum), strings.ToLower(search)) {
-			result = append(result, item)
-		}
+	newartist := JsonData{
+		Name:    artistsJson.Name,
+		Image:   artistsJson.Image,
+		Members: artistsJson.Members,
 	}
-	return result
+	return newartist, nil
 }
 
 func CaptalizdString(s string) string {
 	s = strings.Replace(s, "-", " ", -1)
 	s = strings.Replace(s, "_", " ", -1)
 	return strings.Title(s)
+}
+
+func ErrorsMessage() AllMessageErrors {
+	return AllMessageErrors{
+		NotFound:                 "Page Not Found",
+		BadRequest:               "Bad Request",
+		InternalError:            "Internal Server Error",
+		DescriptionNotFound:      "Sorry, the page you are looking for does not exist. It might have been moved or deleted. Please check the URL or return to the homepage.",
+		DescriptionBadRequest:    "The request could not be understood by the server due to malformed syntax. Please verify your input and try again.",
+		DescriptionInternalError: "An unexpected error occurred on the server. We are working to resolve this issue. Please try again later.",
+	}
 }
