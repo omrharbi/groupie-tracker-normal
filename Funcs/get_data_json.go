@@ -18,7 +18,11 @@ func GetDataFromJson(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "404 not found", http.StatusNotFound)
 		return
 	}
-	artisData := changeJsonToStruct()
+	artisData, err := changeJsonToStruct()
+	if err != nil {
+		http.Error(w, "Error 500 Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 	mpt, err := template.ParseFiles("templates/index.html")
 	if err != nil {
 		http.Error(w, "Error 500 Internal Server Error", http.StatusInternalServerError)
@@ -29,11 +33,14 @@ func GetDataFromJson(w http.ResponseWriter, r *http.Request) {
 
 func ShowArtistHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
+
 	if r.URL.Path != "/Artist/"+id {
 		http.Error(w, "404 not found", http.StatusNotFound)
 		return
 	}
+
 	artist, err := Fetch_Data_Relation_FromId(id)
+	// fmt.Println(artist)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Artist not found: %v", err), http.StatusNotFound)
 		return
@@ -44,17 +51,6 @@ func ShowArtistHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error executing template: %v", err), http.StatusInternalServerError)
 	}
 }
-
-// func HandleSearsh(w http.ResponseWriter, r *http.Request) {
-// 	query := r.URL.Query().Get("search")
-// 	artisData := changeJsonToStruct()
-// 	result := Searsh_data(query, artisData)
-// 	tmpl := template.Must(template.ParseFiles("templates/index.html"))
-// 	err := tmpl.Execute(w, result)
-// 	if err != nil {
-// 		http.Error(w, fmt.Sprintf("Error executing template: %v", err), http.StatusInternalServerError)
-// 	}
-// }
 
 func HandleStyle(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path[len("/styles"):]
