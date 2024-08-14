@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	
 )
 
 func changeJsonToStruct() []JsonData {
@@ -88,17 +87,6 @@ func Get_Data_From_Artists_With_ID(id string) (JsonData, error) {
 		return JsonData{}, fmt.Errorf("error decoding artist data: %v", err)
 	}
 	return artistsJson, nil
-}
-
-func Searsh_data(search string, artists []JsonData) []JsonData {
-	var result []JsonData
-	for _, item := range artists {
-		if strings.Contains(strings.ToLower(item.Name), strings.ToLower(search)) ||
-			strings.Contains(strings.ToLower(item.FirstAlbum), strings.ToLower(search)) {
-			result = append(result, item)
-		}
-	}
-	return result
 }
 
 func CaptalizdString(s string) string {
