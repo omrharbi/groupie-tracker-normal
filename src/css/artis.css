@@ -185,6 +185,7 @@ li{
 .institution {
     font-weight: bold;
     margin-bottom: 5px;
+    text-transform: capitalize;
     color: #FDC663;
 }
 .year {

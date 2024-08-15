@@ -3,99 +3,88 @@ package Groupie_tracker
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
-	"strings"
+
 )
 
-func changeJsonToStruct() []JsonData {
+func changeJsonToStruct() ([]JsonData, error) {
 	var artistData []JsonData
-	url := "https://groupietrackers.herokuapp.com/api/artists"
-	response, err := http.Get(url)
+
+	response, err := http.Get("https://groupietrackers.herokuapp.com/api/artists")
 	if err != nil {
-		log.Fatal("Error from Response")
+		return nil, fmt.Errorf("khata2 f jib l'data: %v", err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code machi normal: %d", response.StatusCode)
 	}
 
-	if response.StatusCode == http.StatusOK {
-		boderesponse, err := io.ReadAll(response.Body)
-		if err != nil {
-			log.Fatal("Error from reading Response")
-		}
-		err = json.Unmarshal(boderesponse, &artistData)
-		if err != nil {
-			log.Fatal("Error To Unmarshal Data ")
-		}
-
+	err = json.NewDecoder(response.Body).Decode(&artistData)
+	if err != nil {
+		return nil, fmt.Errorf("khata2 f t7wil JSON: %v", err)
 	}
-	return artistData
+
+	return artistData, nil
 }
 
 func FetchDataRelationFromId(id string) (Artist, error) {
-	artistsJson, err := GetDataFromArtistsWithID(id)
-	if err != nil {
-		return Artist{}, fmt.Errorf("error fetching data from artis data %v", err)
-	}
-	url := "https://groupietrackers.herokuapp.com/api/relation/" + id
-	ResponBody, err := http.Get(url)
-	if err != nil {
-		return Artist{}, fmt.Errorf("error fetching data from URL: %v", err)
-	}
-	defer ResponBody.Body.Close()
-	var artist Artist
-	body, err := io.ReadAll(ResponBody.Body)
-	if err != nil {
-		return Artist{}, fmt.Errorf("error reading response body: %v", err)
-	}
-	err = json.Unmarshal(body, &artist)
-	if err != nil {
-		return Artist{}, fmt.Errorf("error unmarshalling response: %v", err)
-	}
+    artistsJson, err := GetDataFromArtistsWithID(id)
+    if err != nil {
+        return Artist{}, fmt.Errorf("error fetching data from artist data: %w", err)
+    }
 
-	artist = Artist{
-		ID:             artist.ID,
-		Image:          artistsJson.Image,
-		Name:           artistsJson.Name,
-		DatesLocations: artist.DatesLocations,
-		Members:        artistsJson.Members,
-	}
-	formatlocations := make(map[string][]string)
+    respBody, err := http.Get("https://groupietrackers.herokuapp.com/api/relation/" + id)
+    if err != nil {
+        return Artist{}, fmt.Errorf("error fetching data from URL: %w", err)
+    }
+    defer respBody.Body.Close()
 
-	for locatios, dates := range artist.DatesLocations {
-		formaloca := CaptalizdString(locatios)
-		formatlocations[formaloca] = dates
-	}
-	artist.DatesLocations = formatlocations
-	return artist, nil
+    var artist Artist
+    err = json.NewDecoder(respBody.Body).Decode(&artist)
+    if err != nil {
+        return Artist{}, fmt.Errorf("error decoding response: %w", err)
+    }
+
+    artist.Image = artistsJson.Image
+    artist.Name = artistsJson.Name
+    artist.Members = artistsJson.Members
+
+    if artist.ID == 0 {
+        return Artist{}, fmt.Errorf("invalid artist ID")
+    }
+	
+    return artist, nil
 }
 
 func GetDataFromArtistsWithID(id string) (JsonData, error) {
-	urlartists := "https://groupietrackers.herokuapp.com/api/artists/" + id
-	respoceArtists, err := http.Get(urlartists)
-	if err != nil {
-		return JsonData{}, fmt.Errorf("error fetching data from URL: %v", err)
-	}
-	defer respoceArtists.Body.Close()
+    urlArtists := "https://groupietrackers.herokuapp.com/api/artists/" + id
+    resp, err := http.Get(urlArtists)
+    if err != nil {
+        return JsonData{}, fmt.Errorf("error fetching data from URL: %w", err)
+    }
+    defer resp.Body.Close()
 
-	var artistsJson JsonData
-	bodyResponse_artists, err := io.ReadAll(respoceArtists.Body)
-	if err != nil {
-		return JsonData{}, fmt.Errorf("error reading response body: %v", err)
-	}
-	err = json.Unmarshal(bodyResponse_artists, &artistsJson)
-	if err != nil {
-		return JsonData{}, fmt.Errorf("error decoding artist data: %v", err)
-	}
-	return artistsJson, nil
+    var artistsJson JsonData
+    err = json.NewDecoder(resp.Body).Decode(&artistsJson)
+    if err != nil {
+        return JsonData{}, fmt.Errorf("error decoding artist data: %w", err)
+    }
+    return artistsJson, nil
 }
 
+// func formatLocations(locations map[string][]string) map[string][]string {
+//     formatted := make(map[string][]string, len(locations))
+//     for location, dates := range locations {
+//         formattedLoc := strings.Title(strings.NewReplacer("-", " ", "_", " ").Replace(location))
+//         formatted[formattedLoc] = dates
+//     }
+//     return formatted
+// }
 
-
-func CaptalizdString(s string) string {
-	s = strings.Replace(s, "-", " ", -1)
-	s = strings.Replace(s, "_", " ", -1)
-	return strings.Title(s)
-}
+// func CapitalizeString(s string) string {
+//     return strings.Title(strings.NewReplacer("-", " ", "_", " ").Replace(s))
+// }
 
 func ErrorsMessage() AllMessageErrors {
 	return AllMessageErrors{

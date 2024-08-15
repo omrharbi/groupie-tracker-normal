@@ -1,10 +1,12 @@
 package Groupie_tracker
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
+
+	// "strconv"
 	"text/template"
 )
 
@@ -29,7 +31,11 @@ func GetDataFromJson(w http.ResponseWriter, r *http.Request) {
 		HandleErrors(w, errors.NotFound, errors.DescriptionNotFound, http.StatusNotFound)
 		return
 	}
-	artisData := changeJsonToStruct()
+	artisData, err1 := changeJsonToStruct()
+	if err1 != nil {
+		HandleErrors(w, errors.BadRequest, errors.DescriptionBadRequest, http.StatusBadRequest)
+		return
+	}
 	err := tmpl.ExecuteTemplate(w, "index.html", artisData)
 	if err != nil {
 		HandleErrors(w, errors.InternalError, errors.DescriptionInternalError, http.StatusInternalServerError)
@@ -39,15 +45,20 @@ func GetDataFromJson(w http.ResponseWriter, r *http.Request) {
 
 func HandlerShowRelation(w http.ResponseWriter, r *http.Request) {
 	idParam := r.PathValue("id")
-	id, err := strconv.Atoi(idParam)
-	if err != nil || id <= 0 {
-		HandleErrors(w, errors.BadRequest, errors.DescriptionBadRequest, http.StatusBadRequest)
+	// id, err := strconv.Atoi(idParam)
+	// if err != nil || id <= 0 {
+	// 	HandleErrors(w, errors.BadRequest, errors.DescriptionBadRequest, http.StatusBadRequest)
+	// 	return
+	// }
+	// if r.URL.Path != "/Artist/"+idParam {
+	// 	HandleErrors(w, errors.NotFound, errors.DescriptionNotFound, http.StatusNotFound)
+	// 	return
+	// }
+	if r.Method != http.MethodGet {
+		HandleErrors(w, errors.InternalError, errors.DescriptionInternalError, http.StatusMethodNotAllowed)
 		return
 	}
-	if r.URL.Path != "/Artist/"+idParam {
-		HandleErrors(w, errors.NotFound, errors.DescriptionNotFound, http.StatusNotFound)
-		return
-	}
+	fmt.Println(r.Method)
 	artist, err := FetchDataRelationFromId(idParam)
 	if err != nil {
 		HandleErrors(w, errors.InternalError, errors.DescriptionInternalError, http.StatusInternalServerError)
