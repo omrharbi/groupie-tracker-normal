@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
 )
 
-func changeJsonToStruct() ([]JsonData, error) {
+func GetArtistsDataStruct() ([]JsonData, error) {
 	var artistData []JsonData
 
 	response, err := http.Get("https://groupietrackers.herokuapp.com/api/artists")
@@ -29,48 +28,95 @@ func changeJsonToStruct() ([]JsonData, error) {
 }
 
 func FetchDataRelationFromId(id string) (Artist, error) {
-    artistsJson, err := GetDataFromArtistsWithID(id)
-    if err != nil {
-        return Artist{}, fmt.Errorf("error fetching data from artist data: %w", err)
-    }
+	artistsJson, err := GetDataFromArtistsWithID(id)
+	if err != nil {
+		return Artist{}, fmt.Errorf("error fetching data from artist data: %w", err)
+	}
 
-    respBody, err := http.Get("https://groupietrackers.herokuapp.com/api/relation/" + id)
-    if err != nil {
-        return Artist{}, fmt.Errorf("error fetching data from URL: %w", err)
-    }
-    defer respBody.Body.Close()
+	dates , err2 := GetDates(id)
+	if err2 != nil {
+		return Artist{}, fmt.Errorf("error fetching data from artist data: %w", err)
+	}
 
-    var artist Artist
-    err = json.NewDecoder(respBody.Body).Decode(&artist)
-    if err != nil {
-        return Artist{}, fmt.Errorf("error decoding response: %w", err)
-    }
+	location , err3 := GetLocation(id)
+	if err3 != nil {
+		return Artist{}, fmt.Errorf("error fetching data from artist data: %w", err)
+	}
 
-    artist.Image = artistsJson.Image
-    artist.Name = artistsJson.Name
-    artist.Members = artistsJson.Members
+	respBody, err4 := http.Get("https://groupietrackers.herokuapp.com/api/relation/" + id)
+	if err4 != nil {
+		return Artist{}, fmt.Errorf("error fetching data from URL: %w", err)
+	}
+	defer respBody.Body.Close()
 
-    if artist.ID == 0 {
-        return Artist{}, fmt.Errorf("invalid artist ID")
-    }
-	
-    return artist, nil
+	var artist Artist
+	err = json.NewDecoder(respBody.Body).Decode(&artist)
+	if err != nil {
+		return Artist{}, fmt.Errorf("error decoding response: %w", err)
+	}
+
+	artist.Image = artistsJson.Image
+	artist.Name = artistsJson.Name
+	artist.Members = artistsJson.Members
+	artist.Date = dates.Date
+	artist.Location = location.Locations
+
+
+	// if artist.ID == 0 {
+	// 	return Artist{}, fmt.Errorf("invalid artist ID")
+	// }
+
+	return artist, nil
 }
 
 func GetDataFromArtistsWithID(id string) (JsonData, error) {
-    urlArtists := "https://groupietrackers.herokuapp.com/api/artists/" + id
-    resp, err := http.Get(urlArtists)
-    if err != nil {
-        return JsonData{}, fmt.Errorf("error fetching data from URL: %w", err)
-    }
-    defer resp.Body.Close()
+	urlArtists := "https://groupietrackers.herokuapp.com/api/artists/" + id
+	resp, err := http.Get(urlArtists)
+	if err != nil {
+		return JsonData{}, fmt.Errorf("error fetching data from URL: %w", err)
+	}
+	defer resp.Body.Close()
 
-    var artistsJson JsonData
-    err = json.NewDecoder(resp.Body).Decode(&artistsJson)
-    if err != nil {
-        return JsonData{}, fmt.Errorf("error decoding artist data: %w", err)
-    }
-    return artistsJson, nil
+	var artistsJson JsonData
+	err = json.NewDecoder(resp.Body).Decode(&artistsJson)
+	if err != nil {
+		return JsonData{}, fmt.Errorf("error decoding artist data: %w", err)
+	}
+	return artistsJson, nil
+}
+
+func GetDates(id string) (Artist, error) {
+	urlArtists := "https://groupietrackers.herokuapp.com/api/dates/" + id
+	resp, err := http.Get(urlArtists)
+	if err != nil {
+		return Artist{}, fmt.Errorf("error fetching data from URL: %w", err)
+	}
+	defer resp.Body.Close()
+
+	var date Artist
+	err = json.NewDecoder(resp.Body).Decode(&date)
+	if err != nil {
+		return Artist{}, fmt.Errorf("error decoding artist data: %w", err)
+	}
+	fmt.Println("date:",date)
+	return date, nil
+}
+
+func GetLocation(id string) (Location, error) {
+	urlArtists := "https://groupietrackers.herokuapp.com/api/locations/" + id
+	resp, err := http.Get(urlArtists)
+	if err != nil {
+		return Location{}, fmt.Errorf("error fetching data from URL: %w", err)
+	}
+	defer resp.Body.Close()
+
+	var locations Location
+	err = json.NewDecoder(resp.Body).Decode(&locations)
+	if err != nil {
+		return Location{}, fmt.Errorf("error decoding artist data: %w", err)
+	}
+	fmt.Println(locations)
+	return locations, nil
 }
 
 // func formatLocations(locations map[string][]string) map[string][]string {

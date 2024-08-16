@@ -12,6 +12,10 @@
                 <aside class="sidebar">
                     <img class="card-img" src="{{.Image}}" alt="Artist Image">
                     <h4>Name: {{.Name}}</h4>
+                    <div class="Members">
+                        <p>Members: {{range .Members}}{{.}},
+                            {{end}}</p>
+                    </div>
                 </aside>
                 <div class="main-content">
                     <div class="nav">
@@ -33,10 +37,7 @@
                             <div class="info contents" id="about">
                                 <h4 class="About">About Me</h4>
                                 <span class="prog"></span>
-                                <div class="Members">
-                                    <p>Members: {{range .Members}}{{.}},
-                                        {{end}}</p>
-                                </div>
+
                             </div>
 
                             <div id="relation" class="contents">
