@@ -1,9 +1,9 @@
 
-let showInfoAbout = document.getElementById("showInfoAbout");
+let showInfodate = document.getElementById("showInfodate");
 let showInfoRelation = document.getElementById("showInfoRelation");
 let showInfolocation = document.getElementById("showInfolocation");
 
-let about = document.getElementById("about");
+let about = document.getElementById("date");
 let relation = document.getElementById("relation");
 let locations = document.getElementById("location");
 
@@ -12,7 +12,7 @@ about.classList.add('visible');
 relation.classList.add('hidden');
 locations.classList.add('hidden')
 
-showInfoAbout.onclick = function() {
+showInfodate.onclick = function() {
     about.classList.add('visible');
     about.classList.remove('hidden');
 

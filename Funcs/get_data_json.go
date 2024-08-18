@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
+
 	"text/template"
 )
 
@@ -29,8 +29,12 @@ func GetDataFromJson(w http.ResponseWriter, r *http.Request) {
 		HandleErrors(w, errors.NotFound, errors.DescriptionNotFound, http.StatusNotFound)
 		return
 	}
-	artisData := changeJsonToStruct()
-	err := tmpl.ExecuteTemplate(w, "index.html", artisData)
+	artisData, err := GetArtistsDataStruct()
+	if err != nil {
+		HandleErrors(w, errors.BadRequest, errors.DescriptionBadRequest, http.StatusBadRequest)
+		return
+	}
+	err = tmpl.ExecuteTemplate(w, "index.html", artisData)
 	if err != nil {
 		HandleErrors(w, errors.InternalError, errors.DescriptionInternalError, http.StatusInternalServerError)
 		return
@@ -39,24 +43,15 @@ func GetDataFromJson(w http.ResponseWriter, r *http.Request) {
 
 func HandlerShowRelation(w http.ResponseWriter, r *http.Request) {
 	idParam := r.PathValue("id")
-	id, err := strconv.Atoi(idParam)
-	if err != nil || id <= 0 {
-		HandleErrors(w, errors.BadRequest, errors.DescriptionBadRequest, http.StatusBadRequest)
-		return
-	}
-	if r.URL.Path != "/Artist/"+idParam {
-		HandleErrors(w, errors.NotFound, errors.DescriptionNotFound, http.StatusNotFound)
-		return
-	}
 	artist, err := FetchDataRelationFromId(idParam)
+
 	if err != nil {
 		HandleErrors(w, errors.InternalError, errors.DescriptionInternalError, http.StatusInternalServerError)
 		return
 	}
-	errs := tmpl.ExecuteTemplate(w, "InforArtis.html", artist)
-	if errs != nil {
+	err = tmpl.ExecuteTemplate(w, "InforArtis.html", artist)
+	if err != nil {
 		HandleErrors(w, errors.InternalError, errors.DescriptionInternalError, http.StatusInternalServerError)
-
 		return
 	}
 }

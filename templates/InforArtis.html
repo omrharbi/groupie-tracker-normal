@@ -1,83 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <link rel="stylesheet" href="/styles/css/artis.css">
-        
-        <title>Artist Info</title>
-    </head>
-    <body>
-        <div class="container">
-            <main class="parent">
-                <aside class="sidebar">
-                    <img class="card-img" src="{{.Image}}" alt="Artist Image">
-                    <h4>Name: {{.Name}}</h4>
-                </aside>
-                <div class="main-content">
-                    <div class="nav">
-                        <div class="navigation">
-                            <ul>
-                                <li><a href="#"
-                                        id="showInfoAbout">About</a></li>
-                                <li><a href="#"
-                                        id="showInfoRelation">Relation</a></li>
-                                <li><a href="#"
-                                        id="showInfolocation">Location</a></li>
-                                <li><a href="#"
-                                        id="showInfodates">Dates</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="content">
-                        <div class="all-content">
-                            <div class="info contents" id="about">
-                                <h4 class="About">About Me</h4>
-                                <span class="prog"></span>
-                                <div class="Members">
-                                    <p>Members: {{range .Members}}{{.}},
-                                        {{end}}</p>
-                                </div>
-                            </div>
-
-                            <div id="relation" class="contents">
-                                <div class="relation">
-                                    <div>
-                                        <h3 class="title">Dates Locations</h3>
-                                        <span class="prog"></span>
-                                    </div>
-                                    <div class="datesLocations">
-
-                                        <ul>
-                                            {{range $location, $dates :=
-                                            .DatesLocations}}
-                                            <div class="timeline-item">
-                                                <li>
-                                                    <strong
-                                                        class="institution">{{$location}}:</strong>
-                                                    <ul>
-                                                        {{range $dates}}
-                                                        <li
-                                                            class="year">{{.}}</li>
-                                                        {{end}}
-                                                    </ul>
-                                                </li>
-                                            </div>
-                                            {{end}}
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="location" class="contents">
-                                <div>
-                                    <h3 class="title">Locations Maps</h3>
-                                    <span class="prog"></span>
-                                </div>
-                            </div>
-                           
-                        </div>
-                    </div>
-                </main>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/styles/css/artis.css">
+    <title>Artist Info</title>
+</head>
+<body>
+    <!-- #MAIN -->
+    <main>
+        <!-- #SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-info">
+                <figure class="avatar-box">
+                    <img src="{{ .Image }}" alt="{{ .Name }}" width="80">
+                </figure>
+                <div class="info-content">
+                    <h1 class="name" title="{{ .Name }}">{{ .Name }}</h1>
+                    <p class="title">Artist</p>
+                </div>
             </div>
-            <script src="/styles/js/navigation.js"></script>
-        </body>
-    </html>
+
+            <div class="sidebar-info_more">
+                <div class="separator"></div>
+                <ul class="contacts-list">
+                    <li class="contact-item">
+                        <div class="contact-info">
+                            <p class="contact-title">Members:</p>
+                            {{ range .Members }}
+                            <a class="contact-link">{{ . }}</a>
+                            {{ end }}
+                        </div>
+                    </li>
+                    <li class="contact-item">
+                        <div class="contact-info">
+                            <p class="contact-title">Creation Date:</p>
+                            <a class="contact-link">{{ .CreationDate }}</a>
+                        </div>
+                    </li>
+                    <li class="contact-item">
+                        <div class="contact-info">
+                            <p class="contact-title">First Album:</p>
+                            <time datetime="{{ .FirstAlbum }}">{{ .FirstAlbum }}</time>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+        <div class="main-content">
+            <nav class="navbar">
+                <ul class="navbar-list">
+                    <li class="navbar-item">
+                        <button id="showInfodate" class="navbar-link"  >Date</button>
+                    </li>
+                    <li class="navbar-item">
+                        <button id="showInfolocation" class="navbar-link" >Locations</button>
+                    </li>
+                    <li class="navbar-item">
+                        <button id="showInfoRelation" class="navbar-link"  >Relation</button>
+                    </li>
+                </ul>
+            </nav>
+            <article id="date" class="contact-artists">
+                <header>
+                    <h2 class="h2 article-title">Date</h2>
+                </header>
+                <section class="about-text">
+                    <p>{{ .Name }}
+                         began their musical journey with the release of their debut album in
+                          {{ .FirstAlbum }}.
+                    </p>
+                </section>
+            </article>
+            <article id="location" class="contact-artists">
+                <header>
+                    <h2 class="h2 article-title">Location</h2>
+                </header>
+                <section class="about-text">
+                    <p>{{ .Name }} began their musical journey with the release of their debut album in {{ .FirstAlbum }}.</p>
+                </section>
+            </article>
+            <article id="relation" class="contact-artists">
+                <header>
+                    <h2 class="h2 article-title">Relation</h2>
+                </header>
+                <section class="about-text">
+                    <p>{{ .Name }} began their musical journey with the release of their debut album in {{ .FirstAlbum }}.</p>
+                </section>
+            </article>
+        </div>
+    </main>
+    <script src="/styles/js/navigation.js"></script>
+</body>
+</html>

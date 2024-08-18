@@ -3,99 +3,136 @@ package Groupie_tracker
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
-	"strings"
 )
 
-func changeJsonToStruct() []JsonData {
+func GetArtistsDataStruct() ([]JsonData, error) {
 	var artistData []JsonData
-	url := "https://groupietrackers.herokuapp.com/api/artists"
-	response, err := http.Get(url)
+
+	response, err := http.Get("https://groupietrackers.herokuapp.com/api/artists")
 	if err != nil {
-		log.Fatal("Error from Response")
+		return nil, fmt.Errorf("khata2 f jib l'data: %v", err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code machi normal: %d", response.StatusCode)
 	}
 
-	if response.StatusCode == http.StatusOK {
-		boderesponse, err := io.ReadAll(response.Body)
-		if err != nil {
-			log.Fatal("Error from reading Response")
-		}
-		err = json.Unmarshal(boderesponse, &artistData)
-		if err != nil {
-			log.Fatal("Error To Unmarshal Data ")
-		}
-
+	err = json.NewDecoder(response.Body).Decode(&artistData)
+	if err != nil {
+		return nil, fmt.Errorf("khata2 f t7wil JSON: %v", err)
 	}
-	return artistData
+
+	return artistData, nil
 }
 
 func FetchDataRelationFromId(id string) (Artist, error) {
 	artistsJson, err := GetDataFromArtistsWithID(id)
 	if err != nil {
-		return Artist{}, fmt.Errorf("error fetching data from artis data %v", err)
+		return Artist{}, fmt.Errorf("error fetching data from artist data: %w", err)
 	}
-	url := "https://groupietrackers.herokuapp.com/api/relation/" + id
-	ResponBody, err := http.Get(url)
-	if err != nil {
-		return Artist{}, fmt.Errorf("error fetching data from URL: %v", err)
+
+	dates , err2 := GetDates(id)
+	if err2 != nil {
+		return Artist{}, fmt.Errorf("error fetching data from artist data: %w", err)
 	}
-	defer ResponBody.Body.Close()
+
+	location , err3 := GetLocation(id)
+	if err3 != nil {
+		return Artist{}, fmt.Errorf("error fetching data from artist data: %w", err)
+	}
+
+	respBody, err4 := http.Get("https://groupietrackers.herokuapp.com/api/relation/" + id)
+	if err4 != nil {
+		return Artist{}, fmt.Errorf("error fetching data from URL: %w", err)
+	}
+	defer respBody.Body.Close()
+
 	var artist Artist
-	body, err := io.ReadAll(ResponBody.Body)
+	err = json.NewDecoder(respBody.Body).Decode(&artist)
 	if err != nil {
-		return Artist{}, fmt.Errorf("error reading response body: %v", err)
-	}
-	err = json.Unmarshal(body, &artist)
-	if err != nil {
-		return Artist{}, fmt.Errorf("error unmarshalling response: %v", err)
+		return Artist{}, fmt.Errorf("error decoding response: %w", err)
 	}
 
-	artist = Artist{
-		ID:             artist.ID,
-		Image:          artistsJson.Image,
-		Name:           artistsJson.Name,
-		DatesLocations: artist.DatesLocations,
-		Members:        artistsJson.Members,
-	}
-	formatlocations := make(map[string][]string)
+	artist.Image = artistsJson.Image
+	artist.Name = artistsJson.Name
+	artist.Members = artistsJson.Members
+	artist.FirstAlbum = artistsJson.FirstAlbum
+	artist.CreationDate  = artistsJson.CreationDate
+	artist.Date = dates.Date
+	artist.Location = location.Locations
 
-	for locatios, dates := range artist.DatesLocations {
-		formaloca := CaptalizdString(locatios)
-		formatlocations[formaloca] = dates
-	}
-	artist.DatesLocations = formatlocations
+
+	// if artist.ID == 0 {
+	// 	return Artist{}, fmt.Errorf("invalid artist ID")
+	// }
+
 	return artist, nil
 }
 
 func GetDataFromArtistsWithID(id string) (JsonData, error) {
-	urlartists := "https://groupietrackers.herokuapp.com/api/artists/" + id
-	respoceArtists, err := http.Get(urlartists)
+	urlArtists := "https://groupietrackers.herokuapp.com/api/artists/" + id
+	resp, err := http.Get(urlArtists)
 	if err != nil {
-		return JsonData{}, fmt.Errorf("error fetching data from URL: %v", err)
+		return JsonData{}, fmt.Errorf("error fetching data from URL: %w", err)
 	}
-	defer respoceArtists.Body.Close()
+	defer resp.Body.Close()
 
 	var artistsJson JsonData
-	bodyResponse_artists, err := io.ReadAll(respoceArtists.Body)
+	err = json.NewDecoder(resp.Body).Decode(&artistsJson)
 	if err != nil {
-		return JsonData{}, fmt.Errorf("error reading response body: %v", err)
-	}
-	err = json.Unmarshal(bodyResponse_artists, &artistsJson)
-	if err != nil {
-		return JsonData{}, fmt.Errorf("error decoding artist data: %v", err)
+		return JsonData{}, fmt.Errorf("error decoding artist data: %w", err)
 	}
 	return artistsJson, nil
 }
 
+func GetDates(id string) (Artist, error) {
+	urlArtists := "https://groupietrackers.herokuapp.com/api/dates/" + id
+	resp, err := http.Get(urlArtists)
+	if err != nil {
+		return Artist{}, fmt.Errorf("error fetching data from URL: %w", err)
+	}
+	defer resp.Body.Close()
 
-
-func CaptalizdString(s string) string {
-	s = strings.Replace(s, "-", " ", -1)
-	s = strings.Replace(s, "_", " ", -1)
-	return strings.Title(s)
+	var date Artist
+	err = json.NewDecoder(resp.Body).Decode(&date)
+	if err != nil {
+		return Artist{}, fmt.Errorf("error decoding artist data: %w", err)
+	}
+	fmt.Println("date:",date)
+	return date, nil
 }
+
+func GetLocation(id string) (Location, error) {
+	urlArtists := "https://groupietrackers.herokuapp.com/api/locations/" + id
+	resp, err := http.Get(urlArtists)
+	if err != nil {
+		return Location{}, fmt.Errorf("error fetching data from URL: %w", err)
+	}
+	defer resp.Body.Close()
+
+	var locations Location
+	err = json.NewDecoder(resp.Body).Decode(&locations)
+	if err != nil {
+		return Location{}, fmt.Errorf("error decoding artist data: %w", err)
+	}
+	fmt.Println(locations)
+	return locations, nil
+}
+
+// func formatLocations(locations map[string][]string) map[string][]string {
+//     formatted := make(map[string][]string, len(locations))
+//     for location, dates := range locations {
+//         formattedLoc := strings.Title(strings.NewReplacer("-", " ", "_", " ").Replace(location))
+//         formatted[formattedLoc] = dates
+//     }
+//     return formatted
+// }
+
+// func CapitalizeString(s string) string {
+//     return strings.Title(strings.NewReplacer("-", " ", "_", " ").Replace(s))
+// }
 
 func ErrorsMessage() AllMessageErrors {
 	return AllMessageErrors{
